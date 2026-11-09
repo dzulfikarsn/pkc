@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="invpend_gazebo_ros2_control">
+
+    <ros2_control name="invpend_gazebo_ros2_control" type="system">
+      <hardware>
+        <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+      </hardware>
+
+      <!-- Cart: diaktuasi dengan gaya (N) -->
+      <joint name="slider_to_cart">
+        <command_interface name="effort" />
+        <state_interface name="position" />
+        <state_interface name="velocity" />
+        <state_interface name="effort" />
+      </joint>
+
+      <!--
+        Pole: pasif, hanya dibaca.
+        Catatan: initial_value tidak dipakai di sini karena gz_ros2_control hanya
+        mereset posisi joint yang punya command interface position (pole jadi
+        tertahan). Untuk membuat pole miring, gunakan topic /pole/disturbance.
+      -->
+      <joint name="cart_to_pole">
+        <state_interface name="position" />
+        <state_interface name="velocity" />
+      </joint>
+    </ros2_control>
+
+    <gazebo>
+      <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(find invpend_simulation)/config/invpend.gazebo.controllers.yaml</parameters>
+      </plugin>
+    </gazebo>
+
+  </xacro:macro>
+
+</robot>

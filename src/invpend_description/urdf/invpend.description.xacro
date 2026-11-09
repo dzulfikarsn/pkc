@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--
+    Inverted pendulum (cart-pole) di atas rel (slidebar).
+    - slider_to_cart : prismatic, sumbu x, digerakkan dengan effort (gaya, N)
+    - cart_to_pole   : continuous, sumbu y, pasif (tidak diaktuasi)
+    Sudut pole = 0 berarti pole tegak lurus ke atas. Sudut positif berarti
+    ujung pole condong ke arah +x.
+  -->
+
+  <xacro:include filename="$(find invpend_description)/urdf/invpend.materials.xacro" />
+
+  <!-- Konstanta dimensi dan massa -->
+  <xacro:property name="mass_slider" value="100.0" />
+  <xacro:property name="mass_cart" value="20.0" />
+  <xacro:property name="mass_pole" value="2.0" />
+  <xacro:property name="width" value="0.25" />   <!-- cart, sumbu x -->
+  <xacro:property name="depth" value="0.25" />   <!-- cart, sumbu y -->
+  <xacro:property name="height" value="0.125" /> <!-- cart, sumbu z -->
+  <xacro:property name="length_slider" value="5.0" />
+  <xacro:property name="length_pole" value="0.5" />
+  <xacro:property name="radius" value="0.01" />       <!-- tebal slidebar -->
+  <xacro:property name="radius_pole" value="0.025" /> <!-- tebal pole -->
+  <xacro:property name="slider_height" value="1.0" /> <!-- tinggi rel dari tanah -->
+
+  <!-- Inersia balok solid terhadap pusat massa -->
+  <xacro:macro name="box_inertial" params="mass x y z *origin">
+    <inertial>
+      <xacro:insert_block name="origin" />
+      <mass value="${mass}" />
+      <inertia
+        ixx="${mass * (y*y + z*z) / 12}" ixy="0.0" ixz="0.0"
+        iyy="${mass * (x*x + z*z) / 12}" iyz="0.0"
+        izz="${mass * (x*x + y*y) / 12}" />
+    </inertial>
+  </xacro:macro>
+
+  <xacro:macro name="invpend_description">
+
+    <!-- Link world: rel dipasang tetap ke dunia -->
+    <link name="world" />
+
+    <joint name="world_to_slidebar" type="fixed">
+      <parent link="world" />
+      <child link="slidebar" />
+      <origin xyz="0 0 ${slider_height}" rpy="0 0 0" />
+    </joint>
+
+    <!-- Slidebar (rel) -->
+    <link name="slidebar">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <box size="${length_slider} ${radius} ${radius}" />
+        </geometry>
+        <material name="black" />
+      </visual>
+      <xacro:box_inertial mass="${mass_slider}" x="${length_slider}" y="${radius}" z="${radius}">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+      </xacro:box_inertial>
+    </link>
+
+    <joint name="slider_to_cart" type="prismatic">
+      <parent link="slidebar" />
+      <child link="cart" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <axis xyz="1 0 0" />
+      <limit effort="100.0" lower="${-length_slider/2}" upper="${length_slider/2}" velocity="10.0" />
+      <dynamics damping="0.0" friction="0.0" />
+    </joint>
+
+    <!-- Cart -->
+    <link name="cart">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <box size="${width} ${depth} ${height}" />
+        </geometry>
+        <material name="blue" />
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <box size="${width} ${depth} ${height}" />
+        </geometry>
+      </collision>
+      <xacro:box_inertial mass="${mass_cart}" x="${width}" y="${depth}" z="${height}">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+      </xacro:box_inertial>
+    </link>
+
+    <joint name="cart_to_pole" type="continuous">
+      <parent link="cart" />
+      <child link="pole" />
+      <origin xyz="0 ${-depth/2 - radius - radius_pole/2} ${height/4}" rpy="0 0 0" />
+      <axis xyz="0 1 0" />
+      <dynamics damping="0.0" friction="0.0" />
+    </joint>
+
+    <!-- Pole -->
+    <link name="pole">
+      <visual>
+        <origin xyz="0 0 ${length_pole/2}" rpy="0 0 0" />
+        <geometry>
+          <box size="${radius_pole} ${radius_pole} ${length_pole}" />
+        </geometry>
+        <material name="orange" />
+      </visual>
+      <collision>
+        <origin xyz="0 0 ${length_pole/2}" rpy="0 0 0" />
+        <geometry>
+          <box size="${radius_pole} ${radius_pole} ${length_pole}" />
+        </geometry>
+      </collision>
+      <xacro:box_inertial mass="${mass_pole}" x="${radius_pole}" y="${radius_pole}" z="${length_pole}">
+        <origin xyz="0 0 ${length_pole/2}" rpy="0 0 0" />
+      </xacro:box_inertial>
+    </link>
+
+  </xacro:macro>
+
+</robot>

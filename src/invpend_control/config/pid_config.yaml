@@ -1,0 +1,25 @@
+pid_controller:
+    ros__parameters:
+        rate: 100.0 # Hz
+        cart_joint: slider_to_cart
+        pole_joint: cart_to_pole
+        command_topic: /cart_effort_controller/commands
+
+        max_effort: 100.0   # N, saturasi gaya ke cart
+        fall_angle: 0.6     # rad, jika |theta| melebihi ini kontrol berhenti
+        cart_setpoint: 0.0  # m, target posisi cart
+
+        # inner loop: error sudut pole (rad) -> gaya cart (N)
+        pole:
+            kp: 600.0
+            ki: 0.0
+            kd: 100.0
+            integral_limit: 0.5
+
+        # outer loop: error posisi cart (m) -> referensi sudut pole (rad)
+        cart:
+            kp: 0.2
+            ki: 0.0
+            kd: 0.2
+            integral_limit: 1.0
+            max_pole_reference: 0.15 # rad

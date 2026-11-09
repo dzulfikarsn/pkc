@@ -1,0 +1,15 @@
+controller_manager:
+    ros__parameters:
+        update_rate: 100 # Hz
+
+        cart_effort_controller:
+            type: effort_controllers/JointGroupEffortController
+
+        joint_state_broadcaster:
+            type: joint_state_broadcaster/JointStateBroadcaster
+
+# command topic: /cart_effort_controller/commands (std_msgs/msg/Float64MultiArray)
+cart_effort_controller:
+    ros__parameters:
+        joints:
+            - slider_to_cart
